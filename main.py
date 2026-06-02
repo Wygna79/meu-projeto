@@ -37,67 +37,66 @@ async def get_tutor():
     finally:
         await conn.close()
 
+@app.get("/veterinario")
+async def get_veterinario():
+    conn = await get_db_connection()
+    try:
+        rows = await conn.fetch("SELECT * FROM veterinario")
+        veterinario = []
+        for row in rows:
+            veterinario.append({"id": row["id_veterinario"], "nome": row["nome"]})
+        return {"users": veterinario}
+    finally:
+        await conn.close()
+
+@app.get("/recepcionista")
+async def get_recepcionista():
+    conn = await get_db_connection()
+    try:
+        rows = await conn.fetch("SELECT * FROM recepcionista")
+        recepcionista = []
+        for row in rows:
+            recepcionista.append({"id": row["id_recepcionista"], "nome": row["nome"]})
+        return {"users": recepcionista}
+    finally:
+        await conn.close()
+
+@app.get("/funcionario")
+async def get_funcionario():
+    conn = await get_db_connection()
+    try:
+        rows = await conn.fetch("SELECT * FROM funcionario")
+        funcionario = []
+        for row in rows:
+            funcionario.append({"id": row["id_funcionario"], "nome": row["nome"]})
+        return {"users": funcionario}
+    finally:
+        await conn.close()
 
 
+@app.get("/consulta")
+async def get_consulta():
+    conn = await get_db_connection()
+    try:
+        rows = await conn.fetch("SELECT * FROM consulta")
+        consulta = []
+        for row in rows:
+            consulta.append({"id": row["id_consulta"], "data": row["data_consulta"]})
+        return {"users": consulta}
+    finally:
+        await conn.close()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+@app.get("/banho")
+async def get_banho():
+    conn = await get_db_connection()
+    try:
+        rows = await conn.fetch("SELECT * FROM banho")
+        banho = []
+        for row in rows:
+            banho.append({"id": row["id_banho"], "data": row["data_banho"]})
+        return {"users": banho}
+    finally:
+        await conn.close()
 
 @app.get("/pets/{id_pet}")
 async def get_pet(id_pet: int):
