@@ -118,7 +118,7 @@ class Tutor(BaseModel):
     endereco: int
     
 @app.post("/tutor")
-async def create_funcionario(tutor: Tutor):
+async def create_tutor(tutor: Tutor):
     conn = await get_db_connection()
     await conn.execute(
             "INSERT INTO tutor (id_tutor, nome, telefone, email, endereco) VALUES ($1, $2, $3, $4, $5)",
@@ -140,7 +140,7 @@ class Pet(BaseModel):
     id_tutor: int
 
 @app.post("/pets")
-async def create_funcionario(pets: Pet):
+async def create_pets(pets: Pet):
     conn = await get_db_connection()
     await conn.execute(
             "INSERT INTO funcionario (id_pets, nome_pet, especie, raca, idade, id_tutor) VALUES ($1, $2, $3, $4, $5, $6)",
@@ -161,7 +161,7 @@ class Veterinario(BaseModel):
     salario: float
 
 @app.post("/veterinario")
-async def create_funcionario(veterinario: Veterinario):
+async def create_veterinario(veterinario: Veterinario):
     conn = await get_db_connection()
     await conn.execute(
             "INSERT INTO veterinario (id_veterinario, nome, telefone, salario) VALUES ($1, $2, $3, $4)",
@@ -180,7 +180,7 @@ class Recepcionista(BaseModel):
     salario: float
 
 @app.post("/recepcionista")
-async def create_funcionario(recepcionista: Recepcionista):
+async def create_recepcionista(recepcionista: Recepcionista):
     conn = await get_db_connection()
     await conn.execute(
             "INSERT INTO recepcionista (id_recepcionista, nome, telefone, salario) VALUES ($1, $2, $3, $4)",
