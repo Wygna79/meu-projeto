@@ -108,25 +108,24 @@ async def get_pet(id_pet: int):
     pet_data = {"id": row["id_pet"], "nome": row["nome_pet"]}    
     return {"pet": pet_data}
 
-
 # POST
 class Tutor(BaseModel):
     id_tutor: int
     nome: str
     telefone: str
     email: str
-    endereco: int
+    endereco: str
     
 @app.post("/tutor")
 async def create_tutor(tutor: Tutor):
     conn = await get_db_connection()
     await conn.execute(
-            "INSERT INTO tutor (id_tutor, nome, telefone, email, endereco) VALUES ($1, $2, $3, $4, $5)",
-            tutor.id_tutor, 
-            tutor.nome, 
-            tutor.telefone, 
-            tutor.email,
-            tutor.endereco
+        "INSERT INTO tutor (id_tutor, nome, telefone, email, endereco) VALUES ($1, $2, $3, $4, $5)",
+        tutor.id_tutor,
+        tutor.nome,
+        tutor.telefone,
+        tutor.email,
+        tutor.endereco
     )
     await conn.close()
     return {"message": "Tutor criado com sucesso!"}
@@ -143,13 +142,17 @@ class Pet(BaseModel):
 async def create_pets(pets: Pet):
     conn = await get_db_connection()
     await conn.execute(
-            "INSERT INTO funcionario (id_pets, nome_pet, especie, raca, idade, id_tutor) VALUES ($1, $2, $3, $4, $5, $6)",
-            pets.id_pet, 
-            pets.nome_pet, 
-            pets.especie, 
-            pets.raca,
-            pets.idade,
-            pets.id_tutor
+        """
+        INSERT INTO pets
+        (id_pet, nome_pet, especie, raca, idade, id_tutor)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        """,
+        pets.id_pet,
+        pets.nome_pet,
+        pets.especie,
+        pets.raca,
+        pets.idade,
+        pets.id_tutor
     )
     await conn.close()
     return {"message": "Pet criado com sucesso!"}
