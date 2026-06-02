@@ -30,7 +30,7 @@ async def get_tutor():
     conn = await get_db_connection()
     try:
         rows = await conn.fetch("SELECT * FROM tutor")
-        pets = []
+        tutor = []
         for row in rows:
             tutor.append({"id": row["id_tutor"], "nome": row["nome"]})
         return {"users": tutor}
