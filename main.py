@@ -12,6 +12,7 @@ async def get_db_connection():
         host="localhost"
     )
 
+# GET
 @app.get("/pets")
 async def get_pets():
     conn = await get_db_connection()
@@ -73,7 +74,6 @@ async def get_funcionario():
     finally:
         await conn.close()
 
-
 @app.get("/consulta")
 async def get_consulta():
     conn = await get_db_connection()
@@ -101,21 +101,96 @@ async def get_banho():
 @app.get("/pets/{id_pet}")
 async def get_pet(id_pet: int):
     conn = await get_db_connection()
-    # Buscamos o pet pelo ID
     row = await conn.fetchrow("SELECT * FROM pets WHERE id_pet = $1", id_pet)
     await conn.close()
-
-    # Verificamos se o pet foi encontrado para evitar erro de 'None'
     if row is None:
         return {"error": "Pet não encontrado"}
-
-    # Criamos o dicionário com os dados que vieram do banco
-    pet_data = {"id": row["id_pet"], "nome": row["nome_pet"]}
-    
+    pet_data = {"id": row["id_pet"], "nome": row["nome_pet"]}    
     return {"pet": pet_data}
 
 
 # POST
+class Tutor(BaseModel):
+    id_tutor: int
+    nome: str
+    telefone: str
+    email: str
+    endereco: int
+    
+@app.post("/tutor")
+async def create_funcionario(tutor: Tutor):
+    conn = await get_db_connection()
+    await conn.execute(
+            "INSERT INTO tutor (id_tutor, nome, telefone, email, endereco) VALUES ($1, $2, $3, $4, $5)",
+            tutor.id_tutor, 
+            tutor.nome, 
+            tutor.telefone, 
+            tutor.email,
+            tutor.endereco
+    )
+    await conn.close()
+    return {"message": "Tutor criado com sucesso!"}
+
+class Pet(BaseModel):
+    id_pet: int
+    nome_pet: str
+    especie: str
+    raca: str
+    idade: int
+    id_tutor: int
+
+@app.post("/pets")
+async def create_funcionario(pets: Pet):
+    conn = await get_db_connection()
+    await conn.execute(
+            "INSERT INTO funcionario (id_pets, nome_pet, especie, raca, idade, id_tutor) VALUES ($1, $2, $3, $4, $5, $6)",
+            pets.id_pet, 
+            pets.nome_pet, 
+            pets.especie, 
+            pets.raca,
+            pets.idade,
+            pets.id_tutor
+    )
+    await conn.close()
+    return {"message": "Pet criado com sucesso!"}
+
+class Veterinario(BaseModel):
+    id_veterinario: int
+    nome: str
+    telefone: str
+    salario: float
+
+@app.post("/veterinario")
+async def create_funcionario(veterinario: Veterinario):
+    conn = await get_db_connection()
+    await conn.execute(
+            "INSERT INTO veterinario (id_veterinario, nome, telefone, salario) VALUES ($1, $2, $3, $4)",
+            veterinario.id_veterinario, 
+            veterinario.nome, 
+            veterinario.telefone, 
+            veterinario.salario
+    )
+    await conn.close()
+    return {"message": "Veterinario criado com sucesso!"}
+
+class Recepcionista(BaseModel):
+    id_recepcionista: int
+    nome: str
+    telefone: str
+    salario: float
+
+@app.post("/recepcionista")
+async def create_funcionario(recepcionista: Recepcionista):
+    conn = await get_db_connection()
+    await conn.execute(
+            "INSERT INTO recepcionista (id_recepcionista, nome, telefone, salario) VALUES ($1, $2, $3, $4)",
+            recepcionista.id_recepcionista, 
+            recepcionista.nome, 
+            recepcionista.telefone, 
+            recepcionista.salario
+    )
+    await conn.close()
+    return {"message": "Recepcionista criado com sucesso!"}
 
 class Funcionario(BaseModel):
     id_funcionario: int
@@ -134,8 +209,7 @@ async def create_funcionario(funcionario: Funcionario):
             funcionario.salario
     )
     await conn.close()
-    return {"message": "Ator criado com sucesso!"}
-
+    return {"message": "Funcionario criado com sucesso!"}
 
 # UPDATE
 
