@@ -11,26 +11,6 @@ async def get_db_connection():
         database="postgres",
         host="localhost"
     )
-# @app.get("/pets")
-# async def get_pets():
-#     conn = await get_db_connection()
-#     rows = await conn.fetch("SELECT * FROM pets")
-#     await conn.close()
-#     pets = []
-#     for row in rows:
-#         pets.append(f"ID do pet: {row["id_pet"]}, nome: {row["nome_pet"]}")
-#     return {"users": pets}
-
-# @app.get("/pets/{id_pet}")
-# async def get_pet(id_pet: int):
-#     conn = await get_db_connection()
-#     actor = await conn.fetchrow("SELECT * FROM pets WHERE id_pet = $1", id_pet)
-#     await conn.close()
-#     pets = []
-#     return {"users": pets}
-
-
-# GET
 
 @app.get("/pets")
 async def get_pets():
@@ -43,6 +23,80 @@ async def get_pets():
         return {"users": pets}
     finally:
         await conn.close()
+
+
+@app.get("/tutor")
+async def get_tutor():
+    conn = await get_db_connection()
+    try:
+        rows = await conn.fetch("SELECT * FROM tutor")
+        pets = []
+        for row in rows:
+            tutor.append({"id": row["id_tutor"], "nome": row["nome"]})
+        return {"users": tutor}
+    finally:
+        await conn.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @app.get("/pets/{id_pet}")
