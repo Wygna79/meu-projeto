@@ -31,7 +31,7 @@ def test_api(x_api_key: Optional[str] = Header(default=None)):
     return True
 
 # salvando usuario
-@app.save("/usurio/{id_usuario}")
+@app.post("/usurio/{id_usuario}")
 async def save_user(usuario: UsuarioCreate, auth: bool = Depends(test_api)):
     conn = await get_db_connection()
     await conn.execute(
