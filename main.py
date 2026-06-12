@@ -1,6 +1,9 @@
 import asyncpg
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
+from fastapi import Header, HTTPException
+from fastapi import Depends
+from typing import Optional
 
 app = FastAPI()
 
@@ -11,6 +14,16 @@ async def get_db_connection():
         database="postgres",
         host="localhost"
     )
+
+API_KEY = "658003"
+
+def test_api(x_api_key: Optional[str] = Header(default=None)):
+    if x_api_key != API_KEY:
+        raise HTTPException(
+        status_code=401,
+        detail="Acesso não autorizado"
+    )
+    return True
 
 # GET
 @app.get("/pets")
@@ -242,7 +255,7 @@ async def update_funcionario(id_funcionario: int, funcionario_data: FuncionarioU
 # DELETE
 
 @app.delete("/funcionario/{id_funcionario}")
-async def delete_funcionario(id_funcionario: int):
+async def delete_funcionario(id_funcionario: int, auth: bool = Depends(test_api)):
     conn = await get_db_connection()
     result = await conn.execute(
         "DELETE FROM funcionario WHERE id_funcionario = $1", id_funcionario
