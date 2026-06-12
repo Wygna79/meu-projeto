@@ -22,24 +22,15 @@ class UsuarioCreate(BaseModel):
     nome: str
     sobrenome: str
     email: EmailStr
+    senha: str
 
 class TesteSenha(BaseModel):
     email: EmailStr
     senha: str
 
-API_KEY = "658003"
-
-def test_api(x_api_key: Optional[str] = Header(default=None)):
-    if x_api_key != API_KEY:
-        raise HTTPException(
-        status_code=401,
-        detail="Acesso não autorizado"
-    )
-    return True
-
 # salvando usuario
 @app.post("/usurio")
-async def save_user(usuario: UsuarioCreate, auth: bool = Depends(test_api)):
+async def save_user(usuario: UsuarioCreate):
     conn = await get_db_connection()
     await conn.execute(
         """
@@ -56,6 +47,7 @@ async def save_user(usuario: UsuarioCreate, auth: bool = Depends(test_api)):
     return {"mensagem": "Usuário cadastrado com sucesso"}
 
 # verificar senha
+@app.post("/verificar-senha")
 async def verificar_senha(dados: TesteSenha):
     conn = await get_db_connection()
     usuario = await conn.fetchrow(
@@ -310,7 +302,7 @@ async def update_funcionario(id_funcionario: int, funcionario_data: FuncionarioU
 # DELETE
 
 @app.delete("/funcionario/{id_funcionario}")
-async def delete_funcionario(id_funcionario: int, auth: bool = Depends(test_api)):
+async def delete_funcionario(id_funcionario: int):
     conn = await get_db_connection()
     result = await conn.execute(
         "DELETE FROM funcionario WHERE id_funcionario = $1", id_funcionario
