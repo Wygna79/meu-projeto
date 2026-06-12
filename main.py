@@ -1,9 +1,10 @@
 import asyncpg
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from fastapi import Header, HTTPException
 from fastapi import Depends
 from typing import Optional
+from passlib.context import CryptContext
 
 app = FastAPI()
 
@@ -15,10 +16,16 @@ async def get_db_connection():
         host="localhost"
     )
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 class UsuarioCreate(BaseModel):
     nome: str
     sobrenome: str
-    email: str
+    email: EmailStr
+
+class TesteSenha(BaseModel):
+    email: EmailStr
+    senha: str
 
 API_KEY = "658003"
 
@@ -37,15 +44,41 @@ async def save_user(usuario: UsuarioCreate, auth: bool = Depends(test_api)):
     await conn.execute(
         """
         INSERT INTO usuario
-        (nome, sobrenome, email)
-        VALUES ($1, $2, $3)
+        (nome, sobrenome, email, senha)
+        VALUES ($1, $2, $3, $4)
         """,
         usuario.nome,
         usuario.sobrenome,
         usuario.email,
+        usuario.senha
     )
     await conn.close()
     return {"mensagem": "Usuário cadastrado com sucesso"}
+
+# verificar senha
+async def verificar_senha(dados: TesteSenha):
+    conn = await get_db_connection()
+    usuario = await conn.fetchrow(
+        """
+        SELECT senha
+        FROM usuario
+        WHERE email = $1
+        """,
+        dados.email
+    )
+    await conn.close()
+    if not usuario:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não encontrado"
+        )
+    senha_correta = pwd_context.verify(
+        dados.senha,
+        usuario["senha"]
+    )
+    if senha_correta:
+        return {"resultado": "Sucesso"}
+    return {"resultado": "Senha diferente"}
 
 # GET
 @app.get("/pets")
