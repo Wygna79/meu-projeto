@@ -29,9 +29,10 @@ class TesteSenha(BaseModel):
     senha: str
 
 # salvando usuario
-@app.post("/usurio")
+@app.post("/usuario")
 async def save_user(usuario: UsuarioCreate):
     conn = await get_db_connection()
+    senha_hash = pwd_context.hash(usuario.senha)
     await conn.execute(
         """
         INSERT INTO usuario
@@ -41,7 +42,7 @@ async def save_user(usuario: UsuarioCreate):
         usuario.nome,
         usuario.sobrenome,
         usuario.email,
-        usuario.senha
+        senha_hash
     )
     await conn.close()
     return {"mensagem": "Usuário cadastrado com sucesso"}
