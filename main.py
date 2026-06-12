@@ -15,6 +15,11 @@ async def get_db_connection():
         host="localhost"
     )
 
+class UsuarioCreate(BaseModel):
+    nome: str
+    sobrenome: str
+    email: str
+
 API_KEY = "658003"
 
 def test_api(x_api_key: Optional[str] = Header(default=None)):
@@ -24,6 +29,24 @@ def test_api(x_api_key: Optional[str] = Header(default=None)):
         detail="Acesso não autorizado"
     )
     return True
+
+# salvando usuario
+@app.save("/usurio/{id_usuario}")
+async def save_user(usuario: UsuarioCreate, auth: bool = Depends(test_api)):
+    conn = await get_db_connection()
+    await conn.execute(
+        """
+        INSERT INTO usuario
+        (nome, sobrenome, email, senha_hash)
+        VALUES ($1, $2, $3, $4)
+        """,
+        usuario.nome,
+        usuario.sobrenome,
+        usuario.email,
+    )
+
+    await conn.close()
+    return {"mensagem": "Usuário cadastrado com sucesso"}
 
 # GET
 @app.get("/pets")
