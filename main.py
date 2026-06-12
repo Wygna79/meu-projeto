@@ -29,14 +29,16 @@ class TesteSenha(BaseModel):
     senha: str
 
 # salvando usuario
-@app.post("/usuario")
-async def save_user(usuario: UsuarioCreate):
+@app.post("/usuarios")
+async def criar_usuario(usuario: UsuarioCreate):
     conn = await get_db_connection()
+
     senha_hash = pwd_context.hash(usuario.senha)
+
     await conn.execute(
         """
         INSERT INTO usuario
-        (nome, sobrenome, email, senha)
+        (nome, sobrenome, email, senha_hash)
         VALUES ($1, $2, $3, $4)
         """,
         usuario.nome,
@@ -44,33 +46,41 @@ async def save_user(usuario: UsuarioCreate):
         usuario.email,
         senha_hash
     )
+
     await conn.close()
+
     return {"mensagem": "Usuário cadastrado com sucesso"}
 
-# verificar senha
+# Endpoint para verificar senha
 @app.post("/verificar-senha")
 async def verificar_senha(dados: TesteSenha):
     conn = await get_db_connection()
+
     usuario = await conn.fetchrow(
         """
-        SELECT senha
+        SELECT senha_hash
         FROM usuario
         WHERE email = $1
         """,
         dados.email
     )
+
     await conn.close()
+
     if not usuario:
         raise HTTPException(
             status_code=404,
             detail="Usuário não encontrado"
         )
+
     senha_correta = pwd_context.verify(
         dados.senha,
-        usuario["senha"]
+        usuario["senha_hash"]
     )
+
     if senha_correta:
         return {"resultado": "Sucesso"}
+
     return {"resultado": "Senha diferente"}
 
 # GET
