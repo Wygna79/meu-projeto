@@ -31,20 +31,19 @@ def test_api(x_api_key: Optional[str] = Header(default=None)):
     return True
 
 # salvando usuario
-@app.post("/usurio/{id_usuario}")
+@app.post("/usurio")
 async def save_user(usuario: UsuarioCreate, auth: bool = Depends(test_api)):
     conn = await get_db_connection()
     await conn.execute(
         """
         INSERT INTO usuario
-        (nome, sobrenome, email, senha_hash)
-        VALUES ($1, $2, $3, $4)
+        (nome, sobrenome, email)
+        VALUES ($1, $2, $3)
         """,
         usuario.nome,
         usuario.sobrenome,
         usuario.email,
     )
-
     await conn.close()
     return {"mensagem": "Usuário cadastrado com sucesso"}
 
