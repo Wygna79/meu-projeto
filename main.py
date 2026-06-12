@@ -1,11 +1,12 @@
 import asyncpg
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, EmailStr
-from passlib.context import CryptContext
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
+from fastapi import Header, HTTPException
+from fastapi import Depends
+from typing import Optional
 
 app = FastAPI()
 
-# Configuração da conexão com o banco de dados
 async def get_db_connection():
     return await asyncpg.connect(
         user="postgres",
@@ -14,79 +15,38 @@ async def get_db_connection():
         host="localhost"
     )
 
-# Configuração do contexto de criptografia para a senha
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# -----------------------------------------------------------------------------
-# SCHEMAS (Pydantic) para Usuários
-# -----------------------------------------------------------------------------
 class UsuarioCreate(BaseModel):
     nome: str
     sobrenome: str
-    email: EmailStr
-    senha: str
+    email: str
 
-class TesteSenha(BaseModel):
-    email: EmailStr
-    senha: str
+API_KEY = "658003"
 
-# -----------------------------------------------------------------------------
-# ENDPOINTS de Usuários (Requisitos solicitados)
-# -----------------------------------------------------------------------------
+def test_api(x_api_key: Optional[str] = Header(default=None)):
+    if x_api_key != API_KEY:
+        raise HTTPException(
+        status_code=401,
+        detail="Acesso não autorizado"
+    )
+    return True
 
-@app.post("/usuarios")
-async def criar_usuario(usuario: UsuarioCreate):
+# salvando usuario
+@app.post("/usurio")
+async def save_user(usuario: UsuarioCreate, auth: bool = Depends(test_api)):
     conn = await get_db_connection()
-    try:
-        # Gera o hash seguro da senha recebida em texto limpo
-        senha_hash = pwd_context.hash(usuario.senha)
+    await conn.execute(
+        """
+        INSERT INTO usuario
+        (nome, sobrenome, email)
+        VALUES ($1, $2, $3)
+        """,
+        usuario.nome,
+        usuario.sobrenome,
+        usuario.email,
+    )
+    await conn.close()
+    return {"mensagem": "Usuário cadastrado com sucesso"}
 
-        await conn.execute(
-            """
-            INSERT INTO usuario (nome, sobrenome, email, senha_hash)
-            VALUES ($1, $2, $3, $4)
-            """,
-            usuario.nome,
-            usuario.sobrenome,
-            usuario.email,
-            senha_hash
-        )
-        return {"mensagem": "Usuário cadastrado com sucesso"}
-    except asyncpg.exceptions.UniqueViolationError:
-        raise HTTPException(status_code=400, detail="Este e-mail já está cadastrado.")
-    finally:
-        await conn.close()
-
-
-@app.post("/verificar-senha")
-async def verificar_senha(dados: TesteSenha):
-    conn = await get_db_connection()
-    try:
-        # Busca o hash da senha no banco através do e-mail
-        usuario = await conn.fetchrow(
-            """
-            SELECT senha_hash
-            FROM usuario
-            WHERE email = $1
-            """,
-            dados.email
-        )
-
-        if not usuario:
-            raise HTTPException(
-                status_code=404,
-                detail="Usuário não encontrado"
-            )
-
-        # Verifica se a senha digitada corresponde ao hash salvo
-        senha_correta = pwd_context.verify(dados.senha, usuario["senha_hash"])
-
-        if senha_correta:
-            return {"resultado": "Sucesso"}
-        
-        return {"resultado": "Senha diferente"}
-    finally:
-        await conn.close()
 # GET
 @app.get("/pets")
 async def get_pets():
